@@ -24,6 +24,8 @@ Usage:
   cdc save|s [name]    save the current directory (name defaults to the folder name)
   cdc rm               remove the current directory from the cache
   cdc list|ls [-p]     list cached directories, sorted by name (or by path with -p)
+  cdc export [file]    write the cache as JSON to <file> (or stdout if omitted)
+  cdc import <file>    merge entries from a JSON file (skips missing dirs and duplicates)
 `)
 }
 
@@ -45,6 +47,10 @@ func main() {
 		err = command.Rm(args)
 	case "list", "ls":
 		err = command.List(args)
+	case "export":
+		err = command.Export(args)
+	case "import":
+		err = command.Import(args)
 	case "-h", "--help", "help":
 		usage()
 		return

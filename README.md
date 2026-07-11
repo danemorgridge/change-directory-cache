@@ -27,6 +27,8 @@ cdc save my project     # bookmark the current folder as "my project"
 cdc o proj              # open a shell in a bookmark whose name/path contains "proj"
 cdc list                # show all bookmarks as a table
 cdc rm                  # forget the current folder
+cdc export backup.json  # write all bookmarks to a file (or stdout if omitted)
+cdc import backup.json  # merge bookmarks from a file
 ```
 
 | Command | Aliases | What it does |
@@ -35,6 +37,8 @@ cdc rm                  # forget the current folder
 | `cdc save [name...]` | `s` | Save the **current** directory. The name is all text after `s` (spaces allowed); with no name it defaults to the folder's basename. If the folder is already saved, it reports the existing name and asks whether to update it. |
 | `cdc rm` | | Remove the **current** directory from the cache (errors if it isn't saved). |
 | `cdc list [-p]` | `ls` | Print a `NAME  FOLDER` table sorted by name. `-p` sorts by full path instead. |
+| `cdc export [file]` | | Write the whole cache as JSON to `file`. With no argument (or `-`) it prints to stdout, so it can be piped. |
+| `cdc import <file>` | | Merge bookmarks from a JSON file (same shape as `export`). Entries whose **directory no longer exists** are reported and skipped; entries that **duplicate a path** already in the cache are reported and ignored. A leading UTF-8 BOM is tolerated. |
 
 ## How "jumping" works
 

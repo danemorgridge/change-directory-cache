@@ -3,6 +3,7 @@
 package cache
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -55,16 +56,42 @@ func Load() (*Cache, error) {
 	return c, nil
 }
 
-// Save writes the cache back to disk.
-func (c *Cache) Save() error {
+// ParseEntries decodes cache JSON (the same {"entries": [...]} shape written by
+// Save) into a slice of entries. It is used to read import files that live
+// outside the standard cache location.
+func ParseEntries(data []byte) ([]Entry, error) {
+	var c Cache
+	// Tolerate a UTF-8 BOM, which Windows editors and PowerShell's Out-File
+	// often prepend; encoding/json rejects it otherwise.
+	data = bytes.TrimPrefix(data, []byte{0xEF, 0xBB, 0xBF})
+	if len(data) == 0 {
+		return nil, nil
+	}
+	if err := json.Unmarshal(data, &c); err != nil {
+		return nil, err
+	}
+	return c.Entries, nil
+}
+
+// Marshal serializes the cache to the same indented JSON that Save writes to
+// disk, including a trailing newline.
+func (c *Cache) Marshal() ([]byte, error) {
 	if c.Entries == nil {
 		c.Entries = []Entry{}
 	}
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
+		return nil, err
+	}
+	return append(data, '\n'), nil
+}
+
+// Save writes the cache back to disk.
+func (c *Cache) Save() error {
+	data, err := c.Marshal()
+	if err != nil {
 		return err
 	}
-	data = append(data, '\n')
 	return os.WriteFile(c.path, data, 0o644)
 }
 
